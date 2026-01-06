@@ -5,69 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Babuliler Chat</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #121212; color: white; overflow: hidden; }
 
         /* Giriş Ekranı */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-        #login-screen input { padding: 15px; width: 250px; border-radius: 5px; border: none; margin-bottom: 10px; font-size: 16px; }
+        #login-screen input { padding: 15px; width: 250px; border-radius: 5px; border: none; margin-bottom: 10px; font-size: 16px; background: #333; color: white; }
         #login-screen button { padding: 10px 20px; background: #00ff00; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
-        /* Ana Panel */
-        header { background: #1f1f1f; padding: 15px; display: flex; align-items: center; border-bottom: 1px solid #333; }
-        .menu-btn { cursor: pointer; font-size: 24px; margin-right: 15px; color: #00ff00; }
+        /* Başlık Alanı */
+        header { background: #1f1f1f; padding: 15px; text-align: center; border-bottom: 1px solid #333; }
+        header h2 { color: #00ff00; font-size: 1.2em; letter-spacing: 1px; }
         
-        /* Yan Menü */
-        #sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: #181818; transition: 0.3s; padding: 20px; z-index: 900; border-right: 1px solid #333; }
-        #sidebar.active { left: 0; }
-        #sidebar h3 { margin-bottom: 20px; color: #00ff00; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        #sidebar ul { list-style: none; }
-        #sidebar li { padding: 10px 0; cursor: pointer; transition: 0.2s; }
-        #sidebar li:hover { color: #00ff00; }
+        /* Sohbet Alanı (Tam Ekran) */
+        #chat-area { height: calc(100vh - 120px); overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .msg { background: #2c2c2c; padding: 12px 18px; border-radius: 15px; max-width: 85%; width: fit-content; line-height: 1.4; }
+        .msg.me { align-self: flex-end; background: #005c4b; border-bottom-right-radius: 2px; }
+        .msg span { font-size: 11px; color: #00ff00; display: block; margin-bottom: 4px; font-weight: bold; }
 
-        /* Sohbet Alanı */
-        #chat-area { height: calc(100vh - 130px); overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { background: #2c2c2c; padding: 10px 15px; border-radius: 10px; max-width: 80%; width: fit-content; }
-        .msg.me { align-self: flex-end; background: #005c4b; }
-        .msg span { font-size: 12px; color: #aaa; display: block; margin-bottom: 5px; }
-
-        /* Mesaj Yazma */
-        #input-area { position: fixed; bottom: 0; width: 100%; background: #1f1f1f; padding: 15px; display: flex; gap: 10px; }
-        #input-area input { flex: 1; padding: 10px; border-radius: 5px; border: none; background: #333; color: white; }
-        #input-area button { padding: 10px 20px; background: #00ff00; color: black; border: none; border-radius: 5px; cursor: pointer; }
+        /* Mesaj Yazma Çubuğu */
+        #input-area { position: fixed; bottom: 0; width: 100%; background: #1f1f1f; padding: 15px; display: flex; gap: 10px; border-top: 1px solid #333; }
+        #input-area input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #333; color: white; outline: none; }
+        #input-area button { padding: 10px 25px; background: #00ff00; color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <h1 style="margin-bottom: 20px;">Babuliler Chat</h1>
-        <input type="text" id="username" placeholder="Takma Adın...">
-        <button onclick="login()">Giriş Yap</button>
-    </div>
-
-    <div id="sidebar">
-        <h3>Kanallar</h3>
-        <ul>
-            <li># genel-sohbet</li>
-            <li># oyun-odasi</li>
-            <li># duyurular</li>
-            <li># yardim</li>
-        </ul>
-        <button onclick="toggleMenu()" style="margin-top: 50px; background: none; color: red; border: none; cursor: pointer;">Kapat</button>
+        <h1 style="margin-bottom: 20px; color: #00ff00;">Babuliler Chat</h1>
+        <input type="text" id="username" placeholder="Adını yaz...">
+        <button onclick="login()">Sohbete Başla</button>
     </div>
 
     <header>
-        <div class="menu-btn" onclick="toggleMenu()">☰</div>
-        <h2 id="chat-title">Genel Sohbet</h2>
+        <h2>BABULİLER GENEL SOHBET</h2>
     </header>
 
-    <div id="chat-area" id="chat-box">
-        <div class="msg"><span>Sistem</span>Hoş geldin! Burası güvenli okul sohbet alanı.</div>
+    <div id="chat-area">
+        <div class="msg"><span>Sistem</span>Hoş geldin! Mesaj yazmaya başlayabilirsin.</div>
     </div>
 
     <div id="input-area">
-        <input type="text" id="user-msg" placeholder="Mesaj yazın...">
-        <button onclick="sendMsg()">Gönder</button>
+        <input type="text" id="user-msg" placeholder="Mesajınızı buraya yazın..." onkeypress="handleKey(event)">
+        <button onclick="sendMsg()">GÖNDER</button>
     </div>
 
     <script>
@@ -81,8 +61,8 @@
             }
         }
 
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('active');
+        function handleKey(e) {
+            if (e.key === 'Enter') sendMsg();
         }
 
         function sendMsg() {
