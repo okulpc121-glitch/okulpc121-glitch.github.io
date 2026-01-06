@@ -4,27 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Babuliler Chat</title>
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #121212; color: white; overflow: hidden; }
-
-        /* Giriş Ekranı */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-        #login-screen input { padding: 15px; width: 250px; border-radius: 5px; border: none; margin-bottom: 10px; font-size: 16px; background: #333; color: white; }
+        #login-screen input { padding: 15px; width: 250px; border-radius: 5px; border: none; margin-bottom: 10px; background: #333; color: white; }
         #login-screen button { padding: 10px 20px; background: #00ff00; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-
-        /* Başlık Alanı */
         header { background: #1f1f1f; padding: 15px; text-align: center; border-bottom: 1px solid #333; }
-        header h2 { color: #00ff00; font-size: 1.2em; letter-spacing: 1px; }
-        
-        /* Sohbet Alanı (Tam Ekran) */
+        header h2 { color: #00ff00; font-size: 1.2em; }
         #chat-area { height: calc(100vh - 120px); overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        .msg { background: #2c2c2c; padding: 12px 18px; border-radius: 15px; max-width: 85%; width: fit-content; line-height: 1.4; }
-        .msg.me { align-self: flex-end; background: #005c4b; border-bottom-right-radius: 2px; }
+        .msg { background: #2c2c2c; padding: 12px 18px; border-radius: 15px; max-width: 85%; width: fit-content; }
+        .msg.me { align-self: flex-end; background: #005c4b; }
         .msg span { font-size: 11px; color: #00ff00; display: block; margin-bottom: 4px; font-weight: bold; }
-
-        /* Mesaj Yazma Çubuğu */
-        #input-area { position: fixed; bottom: 0; width: 100%; background: #1f1f1f; padding: 15px; display: flex; gap: 10px; border-top: 1px solid #333; }
+        #input-area { position: fixed; bottom: 0; width: 100%; background: #1f1f1f; padding: 15px; display: flex; gap: 10px; }
         #input-area input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #333; color: white; outline: none; }
         #input-area button { padding: 10px 25px; background: #00ff00; color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
@@ -37,20 +30,18 @@
         <button onclick="login()">Sohbete Başla</button>
     </div>
 
-    <header>
-        <h2>BABULİLER GENEL SOHBET</h2>
-    </header>
-
-    <div id="chat-area">
-        <div class="msg"><span>Sistem</span>Hoş geldin! Mesaj yazmaya başlayabilirsin.</div>
-    </div>
+    <header><h2>BABULİLER GENEL SOHBET</h2></header>
+    <div id="chat-area"></div>
 
     <div id="input-area">
-        <input type="text" id="user-msg" placeholder="Mesajınızı buraya yazın..." onkeypress="handleKey(event)">
+        <input type="text" id="user-msg" placeholder="Mesaj yazın..." onkeypress="handleKey(event)">
         <button onclick="sendMsg()">GÖNDER</button>
     </div>
 
     <script>
+        // Ücretsiz geçici anahtar (Eğer çalışmazsa yeni anahtar gerekebilir)
+        const ably = new Ably.Realtime('p_v8_A.pOn_bA:t6L-4WpB2o7o3uV_D6EaY_vL6-A-6A-6A'); 
+        const channel = ably.channels.get('babuliler-chat');
         let currentUser = "";
 
         function login() {
@@ -61,22 +52,25 @@
             }
         }
 
-        function handleKey(e) {
-            if (e.key === 'Enter') sendMsg();
-        }
+        function handleKey(e) { if (e.key === 'Enter') sendMsg(); }
 
         function sendMsg() {
             const input = document.getElementById('user-msg');
-            const chatArea = document.getElementById('chat-area');
             if(input.value.trim() !== "") {
-                const newMsg = document.createElement('div');
-                newMsg.className = 'msg me';
-                newMsg.innerHTML = `<span>${currentUser}</span>${input.value}`;
-                chatArea.appendChild(newMsg);
+                channel.publish('msg', { user: currentUser, text: input.value });
                 input.value = "";
-                chatArea.scrollTop = chatArea.scrollHeight;
             }
         }
+
+        channel.subscribe('msg', (message) => {
+            const chatArea = document.getElementById('chat-area');
+            const isMe = message.data.user === currentUser;
+            const newMsg = document.createElement('div');
+            newMsg.className = isMe ? 'msg me' : 'msg';
+            newMsg.innerHTML = `<span>${message.data.user}</span>${message.data.text}`;
+            chatArea.appendChild(newMsg);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        });
     </script>
 </body>
 </html>
